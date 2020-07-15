@@ -109,8 +109,19 @@ function addDepartment() {
             message: "Add Department: "
         }
     ]).then(answers=> {
-        console.log("Adding Departments!!!");
-        start();
+        
+        connection.query(
+            "INSERT INTO department SET ?",
+            {
+              department_name: answers.department,
+            },
+            function(err) {
+              if (err) throw err;
+              console.log("New Department added successfully");
+              // re-prompt the user 
+              start();
+            }
+          );
     });
     
 };
@@ -126,7 +137,13 @@ function addEmployeeRole() {
         {
             type: "input",
             name: "salary",
-            message: "Employee Role Salary: "
+            message: "Employee Role Salary: ",
+            validate: function(value) {
+                if (isNaN(value) === false) {
+                  return true;
+                }
+                return false;
+              }
         },
         {
             type: "input",
@@ -135,8 +152,22 @@ function addEmployeeRole() {
         }
         
     ]).then(answers=>{
-        console.log("Adding Employee Role!!!");
-        start();
+        
+        connection.query(
+            "INSERT INTO employee_role SET ?",
+            {
+              title: answers.role,
+              salary: answers.salary,
+              department_id: answers.department
+              
+            },
+            function(err) {
+              if (err) throw err;
+              console.log("Employee Role added successfully");
+              // re-prompt the user 
+              start();
+            }
+          );
     })
     
 };
@@ -168,8 +199,22 @@ function addEmployee() {
             message: "Name of their manager: "
         }   
     ]).then(answers=> {
-        console.log("Adding Employee!!!");
-        start();
+        
+        connection.query(
+            "INSERT INTO employee SET ?",
+            {
+              first_name: answers.firstname,
+              last_name: answers.lastname,
+              role_id: answers.currentRole,
+              manager_id: answers.manager
+            },
+            function(err) {
+              if (err) throw err;
+              console.log("Employee added successfully");
+              // re-prompt the user 
+              start();
+            }
+          );
     })
     
 
@@ -177,20 +222,33 @@ function addEmployee() {
 
 // Function to view departments in the department table:
 function viewDepartments() {
-    console.log("Viewing Departments!!!");
-    start();
+    connection.query("SELECT * FROM department", function(err, results) {
+        if (err) throw err;
+
+        start(); 
+    });
+    
 };
 
 // Function to view roles in the employee_role table:
 function viewEmployeeRoles() {
-    console.log("Viewing Employee Roles!!!");
-    start();
+    connection.query("SELECT * FROM employee_role", function(err, results) {
+        if (err) throw err;
+
+        start(); 
+
+    });
+    
 };
 
 // Function to view employees in the employees table:
 function viewEmployees() {
-    console.log("Viewing Employees!!!");
-    start();
+    connection.query("SELECT * FROM employee", function(err, results) {
+        if (err) throw err;
+
+        start(); 
+
+    });
 };
 
 // Function to update employee role by changing the role_id in the employee table: 
@@ -204,7 +262,7 @@ function changeJob() {
         } 
     ])
     .then(answers => {
-        console.log("Updating Employee Job!!!");
+        
         start();
     }
         
