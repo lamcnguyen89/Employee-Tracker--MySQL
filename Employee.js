@@ -11,7 +11,8 @@
 // Require Dependencies:
 var mysql = require("mysql"); // For connecting to the MySQL database
 var inquirer = require("inquirer"); // For interacting with the user via the command-line
-var ctable = require("console.table") // For printing MySQL rows  to the console
+var ctable = require("console.table"); // For printing MySQL rows  to the console
+const { listenerCount } = require("process");
 
 
 // Establish Connection with MySQL:
@@ -43,7 +44,7 @@ function start() {
     inquirer
         .prompt([
             {
-                type: "list",
+                type: "rawlist",
                 name: "startOptions",
                 message: "What actions do you want to take?",
                 choices: [
@@ -101,20 +102,76 @@ function start() {
 
 // Function to add departments to the department table:
 function addDepartment() {
-    console.log("Adding Departments!!!");
-    start();
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "department",
+            message: "Add Department: "
+        }
+    ]).then(answers=> {
+        console.log("Adding Departments!!!");
+        start();
+    });
+    
 };
 
 // Function to add roles to the employee_role table:
 function addEmployeeRole() {
-    console.log("Adding Employee Role!!!");
-    start();
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "role",
+            message: "Add Employee Role: "
+        },
+        {
+            type: "input",
+            name: "salary",
+            message: "Employee Role Salary: "
+        },
+        {
+            type: "input",
+            name: "department",
+            message: "Department for this Role: "
+        }
+        
+    ]).then(answers=>{
+        console.log("Adding Employee Role!!!");
+        start();
+    })
+    
 };
 
 // Function to add employees to the employee table:
 function addEmployee() {
-    console.log("Adding Employee!!!");
-    start();
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "firstname",
+            message: "First Name: "
+        },
+        {
+            type: "input",
+            name: "lastname",
+            message: "Last Name: "
+        },
+        {
+            type: "list",
+            name: "currentRole",
+            message: "Role within the company: ",
+            choices: [
+
+            ]
+        },
+        {
+            type: "input",
+            name: "manager",
+            message: "Name of their manager: "
+        }   
+    ]).then(answers=> {
+        console.log("Adding Employee!!!");
+        start();
+    })
+    
 
 };
 
@@ -134,12 +191,23 @@ function viewEmployeeRoles() {
 function viewEmployees() {
     console.log("Viewing Employees!!!");
     start();
-
 };
 
 // Function to update employee role by changing the role_id in the employee table: 
 function changeJob() {
-    console.log("Updating Employee Job!!!");
-    start();
+    inquirer.prompt([
+        {
+            type: "list",
+            name: "firstName",
+            message: "Employee Name: ",
+            choices: []
+        } 
+    ])
+    .then(answers => {
+        console.log("Updating Employee Job!!!");
+        start();
+    }
+        
+    );
 
 };
