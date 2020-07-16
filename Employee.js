@@ -11,8 +11,8 @@
 // Require Dependencies:
 var mysql = require("mysql"); // For connecting to the MySQL database
 var inquirer = require("inquirer"); // For interacting with the user via the command-line
-var ctable = require("console.table"); // For printing MySQL rows  to the console
-var promisemysql = require("promise-mysql")
+var promisemysql = require("promise-mysql") // For doing Asynchronous queries
+require("console.table"); // For printing MySQL rows  to the console
 
 // Put connection properties within an object so it can be easily used by  both mysql and promise mysql
 var connectProp = {
@@ -233,15 +233,16 @@ function addEmployee() {
        return Promise.all([
 
             // Return all the employee roles from the table employee_role. 
-            // The query will be represented by the variable role
+            // The query will be represented by the variable: role
             dbconnection.query("SELECT * FROM employee_role"),
             // Return all employee first and last names from the table employee, concatenate the first_name and last_name columns, and insert into a column called fullName
-            // The query will be represented by the variable name
+            // The query will be represented by the variable: name
             dbconnection.query("SELECT employee.id, concat(employee.first_name, ' ' ,  employee.last_name) AS fullName FROM employee ORDER BY fullName ASC")
 
        ]);
 
-   }).then(([role,name]) => {
+   })
+   .then(([role,name]) => {
 
         // Push queried employee roles into the array employeeRole
         for (var i = 0; i < role.length; i++) {
@@ -254,7 +255,8 @@ function addEmployee() {
 
         return Promise.all([role,name]);
 
-   }).then(([role,name]) => {
+   })
+   .then(([role,name]) => {
 
             // Add option for no manager
             employees.push('null')
@@ -339,10 +341,7 @@ function addEmployee() {
                 );
             });
 
-   })
-
-    
-    
+   })   
 
 };
 
@@ -375,20 +374,95 @@ function viewEmployees() {
 };
 
 // // Function to update employee role by changing the role_id in the employee table: 
-// function changeJob() {
-//     inquirer.prompt([
-//         {
-//             type: "list",
-//             name: "firstName",
-//             message: "Employee Name: ",
-//             choices: []
-//         } 
-//     ])
-//     .then(answers => {
-        
-//         start();
-//     }
-        
-//     );
+function changeJob() {
+    
+    // Create Arrays to hold the Employee Roles and then another to hold Employees that can be chosen as manager
+    let employeeRole = [];
+    let employees = [];
 
-// };
+   // Create connection using promiseMySQL since we will be doing some asynchronous processes
+   promisemysql.createConnection(connectProp)
+   .then((dbconnection) => {
+       return Promise.all([
+
+            // Return all the employee roles from the table employee_role. 
+            // The query will be represented by the variable role
+            dbconnection.query("SELECT * FROM employee_role"),
+            // Return all employee first and last names from the table employee, concatenate the first_name and last_name columns, and insert into a column called fullName
+            // The query will be represented by the variable name
+            dbconnection.query("SELECT employee.id, concat(employee.first_name, ' ' ,  employee.last_name) AS fullName FROM employee ORDER BY fullName ASC")
+
+       ]);
+
+   })
+   .then(([role,name]) => {
+
+        // Push queried employee roles into the array employeeRole
+        for (var i = 0; i < role.length; i++) {
+            employeeRole.push(role[i].title);
+        }
+        // Push queried employee names into the array employees
+        for (var i = 0; i < name.length; i++) {
+            employees.push(name[i].fullName)
+        }
+
+        return Promise.all([role,name]);
+
+   })
+   .then(([role,name]) => {
+
+            inquirer.prompt([
+                {
+                    type: "list",
+                    name: "employeeName",
+                    message: "Employee Name: ",
+                    choices: employees 
+                },  
+                {
+                    type: "list",
+                    name: "currentRole",
+                    message: "New Role: ",
+                    choices: employeeRole
+                } 
+            ]).then(answers=> {
+
+                // Set empty variable for role id
+                let roleID;
+                // Set default managerID as null since the managerID is optional
+                let employeeID;
+
+                // Get the id for the particular employee role selected:
+                for (var i = 0; i < role.length; i++) {
+                    if (answers.currentRole == role[i].title) {
+                        roleID = role[i].id;
+                    }
+                }
+
+                // Get the id for the particular employee selected
+                for (var i = 0; i < name.length; i++) {
+                    if (answers.employeeName == name[i].fullName) {
+                        employeeID = name[i].id;
+                    }
+                }
+
+                
+                connection.query(
+                    `UPDATE employee SET role_id = ${roleID} WHERE id = ${employeeID}`,
+                    function(err) {
+                    if (err) throw err;
+                    console.log("Employee role changed successfully");
+                    // re-prompt the user 
+                    start();
+                    }
+                );
+            });
+
+   })
+
+
+
+
+
+   
+
+};
