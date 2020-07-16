@@ -346,15 +346,16 @@ function addEmployee() {
 
 };
 
-// // Function to view departments in the department table:
-// function viewDepartments() {
-//     connection.query("SELECT * FROM department", function(err, results) {
-//         if (err) throw err;
+// Function to view departments in the department table:
+function viewDepartments() {
+    connection.query("SELECT * FROM department", function(err, results) {
+        if (err) throw err;
 
-//         start(); 
-//     });
+        console.table(results);
+        start(); 
+    });
     
-// };
+};
 
 // // Function to view roles in the employee_role table:
 // function viewEmployeeRoles() {
