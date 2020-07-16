@@ -100,106 +100,126 @@ function start() {
 
 };
 
-// // Function to add departments to the department table:
-// function addDepartment() {
+// Function to add departments to the department table:
+function addDepartment() {
 
-//     inquirer.prompt([
-//         {
-//             type: "input",
-//             name: "department",
-//             message: "Add Department: "
-//         }
-//     ]).then(answers=> {
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "department",
+            message: "Add Department: "
+        }
+    ]).then(answers=> {
         
-//         connection.query(
-//             "INSERT INTO department SET ?",
-//             {
-//               department_name: answers.department,
-//             },
-//             function(err) {
-//               if (err) throw err;
-//               console.log("New Department added successfully");
-//               // re-prompt the user 
-//               start();
-//             }
-//           );
-//     });
+        connection.query(
+            "INSERT INTO department SET ?",
+            {
+              department_name: answers.department,
+            },
+            function(err) {
+              if (err) throw err;
+              console.log("New Department added successfully");
+              // re-prompt the user 
+              start();
+            }
+          );
+    });
     
-// };
+};
 
-// // Function to add roles to the employee_role table:
-// function addEmployeeRole() {
-//     // Create Array to hold Department Name. Real time updated list that can then be input into inquirer
-//     let departmentName = []
+// Function to add roles to the employee_role table:
+function addEmployeeRole() {
+    // Create Array to hold Department Name. Real time updated list that can then be input into inquirer
+    let departmentName = []
 
-//     // Create connection using promiseMySQL since we will be doing some asynchronous processes
-//    promisemysql.createConnection(connectProp)
-//    .then((dbconnection) => {
-//        return Promise.all([
+    // Create connection using promiseMySQL since we will be doing some asynchronous processes
+   promisemysql.createConnection(connectProp)
+   .then((dbconnection) => {
+       return Promise.all([
 
-//             // Return all the departments from the table department. 
-//             // The query will be represented by the variable department
-//             dbconnection.query("SELECT * FROM department"),
-//        ]);
+            // Return all the departments from the table department. 
+            // The query will be represented by the variable department
+            dbconnection.query("SELECT * FROM department"),
+       ]);
 
-//    })
-//    .then(([department]) => {
+   })
+   .then(([department]) => {
 
-//     // Push queried employee roles into the array employeeRole
-//     for (var i = 0; i < department.length; i++) {
-//         departmentName.push(department[i].department_name);
-//     }
+    // Push queried employee roles into the array employeeRole
+    for (var i = 0; i < department.length; i++) {
+        departmentName.push(department[i].department_name);
+    }
 
-//     return Promise.all([department]);
+    return Promise.all([department]);
 
-// }).then(([department]) => {
+}).then(([department]) => {
 
-//             inquirer.prompt([
-//                 {
-//                     type: "input",
-//                     name: "role",
-//                     message: "Add Employee Role: "
-//                 },
-//                 {
-//                     type: "input",
-//                     name: "salary",
-//                     message: "Employee Role Salary: ",
-//                     validate: function(value) {
-//                         if (isNaN(value) === false) {
-//                         return true;
-//                         }
-//                         return false;
-//                     }
-//                 },
-//                 {
-//                     type: "input",
-//                     name: "department",
-//                     message: "Department for this Role: ",
-//                     choices: ,
-//                 }
+            inquirer.prompt([
+                {
+                    type: "input",
+                    name: "role",
+                    message: "Add Employee Role: ",
+                    validate: function(input){
+                        if (input === ""){
+                            console.log("Employee Role Required");
+                            return false;
+                        }
+                        else{
+                            return true;
+                        }
+                    }
+
+                },
+                {
+                    type: "input",
+                    name: "salary",
+                    message: "Employee Role Salary: ",
+                    validate: function(value) {
+                        if (isNaN(value) === false) {
+                        return true;
+                        }
+                        return false;
+                    }
+                },
+                {
+                    type: "list",
+                    name: "department",
+                    message: "Department for this Role: ",
+                    choices: departmentName
+                }
                 
-//             ]).then(answers=>{
-                
-//                 connection.query(
-//                     "INSERT INTO employee_role SET ?",
-//                     {
-//                     title: answers.role,
-//                     salary: answers.salary,
-//                     department_id: answers.department
+            ]).then(answers=>{
+
+                // Set empty variable to insert the Department ID
+                let departmentID;
+
+                // Assign a department ID based on the user input choice
+                for (var i = 0; i < department.length; i++) {
+                    if (answers.department == department[i].department_name) {
+                        departmentID = department[i].id;
+                    }
                     
-//                     },
-//                     function(err) {
-//                     if (err) throw err;
-//                     console.log("Employee Role added successfully");
-//                     // re-prompt the user 
-//                     start();
-//                     }
-//                 );
-//             })
+                } 
+                
+                connection.query(
+                    "INSERT INTO employee_role SET ?",
+                    {
+                    title: answers.role,
+                    salary: answers.salary,
+                    department_id: departmentID
+                    },
+                    function(err) {
+                    if (err) throw err;
+                    console.log("Employee Role added successfully");
+                    // re-prompt the user 
+                    start();
+                    }
+                );
+            })
 
-//         })  
+        })  
     
-// };
+};
 
 // Function to add employees to the employee table:
 function addEmployee() {
