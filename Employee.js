@@ -44,7 +44,7 @@ function start() {
     inquirer
         .prompt([
             {
-                type: "rawlist",
+                type: "list",
                 name: "startOptions",
                 message: "What actions do you want to take?",
                 choices: [
@@ -100,106 +100,106 @@ function start() {
 
 };
 
-// Function to add departments to the department table:
-function addDepartment() {
+// // Function to add departments to the department table:
+// function addDepartment() {
 
-    inquirer.prompt([
-        {
-            type: "input",
-            name: "department",
-            message: "Add Department: "
-        }
-    ]).then(answers=> {
+//     inquirer.prompt([
+//         {
+//             type: "input",
+//             name: "department",
+//             message: "Add Department: "
+//         }
+//     ]).then(answers=> {
         
-        connection.query(
-            "INSERT INTO department SET ?",
-            {
-              department_name: answers.department,
-            },
-            function(err) {
-              if (err) throw err;
-              console.log("New Department added successfully");
-              // re-prompt the user 
-              start();
-            }
-          );
-    });
+//         connection.query(
+//             "INSERT INTO department SET ?",
+//             {
+//               department_name: answers.department,
+//             },
+//             function(err) {
+//               if (err) throw err;
+//               console.log("New Department added successfully");
+//               // re-prompt the user 
+//               start();
+//             }
+//           );
+//     });
     
-};
+// };
 
-// Function to add roles to the employee_role table:
-function addEmployeeRole() {
-    // Create Array to hold Department Name. Real time updated list that can then be input into inquirer
-    let departmentName = []
+// // Function to add roles to the employee_role table:
+// function addEmployeeRole() {
+//     // Create Array to hold Department Name. Real time updated list that can then be input into inquirer
+//     let departmentName = []
 
-    // Create connection using promiseMySQL since we will be doing some asynchronous processes
-   promisemysql.createConnection(connectProp)
-   .then((dbconnection) => {
-       return Promise.all([
+//     // Create connection using promiseMySQL since we will be doing some asynchronous processes
+//    promisemysql.createConnection(connectProp)
+//    .then((dbconnection) => {
+//        return Promise.all([
 
-            // Return all the departments from the table department. 
-            // The query will be represented by the variable department
-            dbconnection.query("SELECT * FROM department"),
-       ]);
+//             // Return all the departments from the table department. 
+//             // The query will be represented by the variable department
+//             dbconnection.query("SELECT * FROM department"),
+//        ]);
 
-   })
-   .then(([department]) => {
+//    })
+//    .then(([department]) => {
 
-    // Push queried employee roles into the array employeeRole
-    for (var i = 0; i < department.length; i++) {
-        departmentName.push(department[i].department_name);
-    }
+//     // Push queried employee roles into the array employeeRole
+//     for (var i = 0; i < department.length; i++) {
+//         departmentName.push(department[i].department_name);
+//     }
 
-    return Promise.all([department]);
+//     return Promise.all([department]);
 
-}).then(([department]) => {
+// }).then(([department]) => {
 
-            inquirer.prompt([
-                {
-                    type: "input",
-                    name: "role",
-                    message: "Add Employee Role: "
-                },
-                {
-                    type: "input",
-                    name: "salary",
-                    message: "Employee Role Salary: ",
-                    validate: function(value) {
-                        if (isNaN(value) === false) {
-                        return true;
-                        }
-                        return false;
-                    }
-                },
-                {
-                    type: "input",
-                    name: "department",
-                    message: "Department for this Role: ",
-                    choices: ,
-                }
+//             inquirer.prompt([
+//                 {
+//                     type: "input",
+//                     name: "role",
+//                     message: "Add Employee Role: "
+//                 },
+//                 {
+//                     type: "input",
+//                     name: "salary",
+//                     message: "Employee Role Salary: ",
+//                     validate: function(value) {
+//                         if (isNaN(value) === false) {
+//                         return true;
+//                         }
+//                         return false;
+//                     }
+//                 },
+//                 {
+//                     type: "input",
+//                     name: "department",
+//                     message: "Department for this Role: ",
+//                     choices: ,
+//                 }
                 
-            ]).then(answers=>{
+//             ]).then(answers=>{
                 
-                connection.query(
-                    "INSERT INTO employee_role SET ?",
-                    {
-                    title: answers.role,
-                    salary: answers.salary,
-                    department_id: answers.department
+//                 connection.query(
+//                     "INSERT INTO employee_role SET ?",
+//                     {
+//                     title: answers.role,
+//                     salary: answers.salary,
+//                     department_id: answers.department
                     
-                    },
-                    function(err) {
-                    if (err) throw err;
-                    console.log("Employee Role added successfully");
-                    // re-prompt the user 
-                    start();
-                    }
-                );
-            })
+//                     },
+//                     function(err) {
+//                     if (err) throw err;
+//                     console.log("Employee Role added successfully");
+//                     // re-prompt the user 
+//                     start();
+//                     }
+//                 );
+//             })
 
-        })  
+//         })  
     
-};
+// };
 
 // Function to add employees to the employee table:
 function addEmployee() {
@@ -217,7 +217,7 @@ function addEmployee() {
             dbconnection.query("SELECT * FROM employee_role"),
             // Return all employee first and last names from the table employee, concatenate the first_name and last_name columns, and insert into a column called fullName
             // The query will be represented by the variable name
-            dbconnection.query("SELECT * FROM employee, concat(employee.first_name, ' ', employee.last_name) AS fullName from employee")
+            dbconnection.query("SELECT employee.id, concat(employee.first_name, ' ' ,  employee.last_name) AS fullName FROM employee ORDER BY fullName ASC")
 
        ]);
 
@@ -236,32 +236,49 @@ function addEmployee() {
 
    }).then(([role,name]) => {
 
+            // Add option for no manager
+            employees.push('null')
+
             inquirer.prompt([
                 {
                     type: "input",
                     name: "firstname",
-                    message: "First Name: "
+                    message: "First Name: ",
+                    validate: function(input){
+                        if (input === ""){
+                            console.log("First Name Required");
+                            return false;
+                        }
+                        else{
+                            return true;
+                        }
+                    }
                 },
                 {
                     type: "input",
                     name: "lastname",
-                    message: "Last Name: "
+                    message: "Last Name: ",
+                    validate: function(input){
+                        if (input === ""){
+                            console.log("Last Name Required");
+                            return false;
+                        }
+                        else{
+                            return true;
+                        }
+                    }
                 },
                 {
                     type: "list",
                     name: "currentRole",
                     message: "Role within the company: ",
                     choices: employeeRole
-
-                    
                 },
                 {
-                    type: "input",
+                    type: "list",
                     name: "manager",
                     message: "Name of their manager: ",
-                    choices: employees
-
-                    
+                    choices: employees 
                 }   
             ]).then(answers=> {
 
@@ -309,52 +326,52 @@ function addEmployee() {
 
 };
 
-// Function to view departments in the department table:
-function viewDepartments() {
-    connection.query("SELECT * FROM department", function(err, results) {
-        if (err) throw err;
+// // Function to view departments in the department table:
+// function viewDepartments() {
+//     connection.query("SELECT * FROM department", function(err, results) {
+//         if (err) throw err;
 
-        start(); 
-    });
+//         start(); 
+//     });
     
-};
+// };
 
-// Function to view roles in the employee_role table:
-function viewEmployeeRoles() {
-    connection.query("SELECT * FROM employee_role", function(err, results) {
-        if (err) throw err;
+// // Function to view roles in the employee_role table:
+// function viewEmployeeRoles() {
+//     connection.query("SELECT * FROM employee_role", function(err, results) {
+//         if (err) throw err;
 
-        start(); 
+//         start(); 
 
-    });
+//     });
     
-};
+// };
 
-// Function to view employees in the employees table:
-function viewEmployees() {
-    connection.query("SELECT * FROM employee", function(err, results) {
-        if (err) throw err;
+// // Function to view employees in the employees table:
+// function viewEmployees() {
+//     connection.query("SELECT * FROM employee", function(err, results) {
+//         if (err) throw err;
 
-        start(); 
+//         start(); 
 
-    });
-};
+//     });
+// };
 
-// Function to update employee role by changing the role_id in the employee table: 
-function changeJob() {
-    inquirer.prompt([
-        {
-            type: "list",
-            name: "firstName",
-            message: "Employee Name: ",
-            choices: []
-        } 
-    ])
-    .then(answers => {
+// // Function to update employee role by changing the role_id in the employee table: 
+// function changeJob() {
+//     inquirer.prompt([
+//         {
+//             type: "list",
+//             name: "firstName",
+//             message: "Employee Name: ",
+//             choices: []
+//         } 
+//     ])
+//     .then(answers => {
         
-        start();
-    }
+//         start();
+//     }
         
-    );
+//     );
 
-};
+// };
