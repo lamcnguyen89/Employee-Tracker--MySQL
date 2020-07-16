@@ -347,7 +347,7 @@ function addEmployee() {
 
 // Function to view departments in the department table:
 function viewDepartments() {
-    connection.query("SELECT * FROM department", function(err, results) {
+    connection.query("SELECT department.id, department.department_name, SUM(employee_role.salary) AS utilized_budget FROM employee LEFT JOIN employee_role on employee.role_id = employee_role.id LEFT JOIN department on employee_role.department_id = department.id GROUP BY department.id, department.department_name;", function(err, results) {
         if (err) throw err;
         console.table(results);
         start(); 
@@ -357,7 +357,7 @@ function viewDepartments() {
 
 // Function to view roles in the employee_role table:
 function viewEmployeeRoles() {
-    connection.query("SELECT * FROM employee_role", function(err, results) {
+    connection.query("SELECT employee_role.id, employee_role.title, department.department_name AS department, employee_role.salary FROM employee_role LEFT JOIN department on employee_role.department_id = department.id;", function(err, results) {
         if (err) throw err;
         console.table(results);
         start(); 
@@ -366,7 +366,7 @@ function viewEmployeeRoles() {
 
 // Function to view employees in the employees table:
 function viewEmployees() {
-    connection.query("SELECT * FROM employee", function(err, results) {
+    connection.query("SELECT employee.id, employee.first_name, employee.last_name, employee_role.title, employee_role.salary FROM employeetracker_db.employee LEFT JOIN employee_role on employee_role.id = employee.role_id", function(err, results) {
         if (err) throw err;
         console.table(results);
         start(); 
