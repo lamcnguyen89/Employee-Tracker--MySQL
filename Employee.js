@@ -350,33 +350,29 @@ function addEmployee() {
 function viewDepartments() {
     connection.query("SELECT * FROM department", function(err, results) {
         if (err) throw err;
-
         console.table(results);
         start(); 
     });
     
 };
 
-// // Function to view roles in the employee_role table:
-// function viewEmployeeRoles() {
-//     connection.query("SELECT * FROM employee_role", function(err, results) {
-//         if (err) throw err;
+// Function to view roles in the employee_role table:
+function viewEmployeeRoles() {
+    connection.query("SELECT * FROM employee_role", function(err, results) {
+        if (err) throw err;
+        console.table(results);
+        start(); 
+    });  
+};
 
-//         start(); 
-
-//     });
-    
-// };
-
-// // Function to view employees in the employees table:
-// function viewEmployees() {
-//     connection.query("SELECT * FROM employee", function(err, results) {
-//         if (err) throw err;
-
-//         start(); 
-
-//     });
-// };
+// Function to view employees in the employees table:
+function viewEmployees() {
+    connection.query("SELECT * FROM employee", function(err, results) {
+        if (err) throw err;
+        console.table(results);
+        start(); 
+    });
+};
 
 // // Function to update employee role by changing the role_id in the employee table: 
 // function changeJob() {
