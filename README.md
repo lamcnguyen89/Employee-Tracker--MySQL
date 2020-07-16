@@ -35,6 +35,5 @@ The Unlicense
 
 ## Deployed Application
 
-View a video demonstration of the Employee Tracker [here](https://drive.google.com/file/d/1IMbaKynSqI4ZyLy9hgwNhlounQfFa4fM/view)
+View a video demonstration of the Employee Tracker [here](https://drive.google.com/file/d/1ugvaW5thtiSsZuorMnHuIZ-tXupxlqLo/view)
 
-View an example of the deployed application on [Heroku](https://git.heroku.com/pure-shore-79395.git).
