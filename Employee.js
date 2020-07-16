@@ -12,24 +12,24 @@
 var mysql = require("mysql"); // For connecting to the MySQL database
 var inquirer = require("inquirer"); // For interacting with the user via the command-line
 var ctable = require("console.table"); // For printing MySQL rows  to the console
-const { listenerCount } = require("process");
+var promisemysql = require("promise-mysql")
+
+// Put connection properties within an object so it can be easily used by  both mysql and promise mysql
+var connectProp = {
+                    host: "localhost",
+                    // Your port; if not 3306
+                    port: 3306,
+                    // Your username
+                    user: "root",
+                    // Your password
+                    password: "root",
+                    database: "employeetracker_db"
+}
 
 
 // Establish Connection with MySQL:
     // create the connection information for the sql database
-    var connection = mysql.createConnection({
-        host: "localhost",
-    
-        // Your port; if not 3306
-        port: 3306,
-    
-        // Your username
-        user: "root",
-    
-        // Your password
-        password: "root",
-        database: "employeetracker_db"
-    });
+    var connection = mysql.createConnection(connectProp);
 
     // connect to the mysql server and sql database
     connection.connect(function(err) {
@@ -102,6 +102,7 @@ function start() {
 
 // Function to add departments to the department table:
 function addDepartment() {
+
     inquirer.prompt([
         {
             type: "input",
@@ -128,94 +129,182 @@ function addDepartment() {
 
 // Function to add roles to the employee_role table:
 function addEmployeeRole() {
-    inquirer.prompt([
-        {
-            type: "input",
-            name: "role",
-            message: "Add Employee Role: "
-        },
-        {
-            type: "input",
-            name: "salary",
-            message: "Employee Role Salary: ",
-            validate: function(value) {
-                if (isNaN(value) === false) {
-                  return true;
+    // Create Array to hold Department Name. Real time updated list that can then be input into inquirer
+    let departmentName = []
+
+    // Create connection using promiseMySQL since we will be doing some asynchronous processes
+   promisemysql.createConnection(connectProp)
+   .then((dbconnection) => {
+       return Promise.all([
+
+            // Return all the departments from the table department. 
+            // The query will be represented by the variable department
+            dbconnection.query("SELECT * FROM department"),
+       ]);
+
+   })
+   .then(([department]) => {
+
+    // Push queried employee roles into the array employeeRole
+    for (var i = 0; i < department.length; i++) {
+        departmentName.push(department[i].department_name);
+    }
+
+    return Promise.all([department]);
+
+}).then(([department]) => {
+
+            inquirer.prompt([
+                {
+                    type: "input",
+                    name: "role",
+                    message: "Add Employee Role: "
+                },
+                {
+                    type: "input",
+                    name: "salary",
+                    message: "Employee Role Salary: ",
+                    validate: function(value) {
+                        if (isNaN(value) === false) {
+                        return true;
+                        }
+                        return false;
+                    }
+                },
+                {
+                    type: "input",
+                    name: "department",
+                    message: "Department for this Role: ",
+                    choices: ,
                 }
-                return false;
-              }
-        },
-        {
-            type: "input",
-            name: "department",
-            message: "Department for this Role: "
-        }
-        
-    ]).then(answers=>{
-        
-        connection.query(
-            "INSERT INTO employee_role SET ?",
-            {
-              title: answers.role,
-              salary: answers.salary,
-              department_id: answers.department
-              
-            },
-            function(err) {
-              if (err) throw err;
-              console.log("Employee Role added successfully");
-              // re-prompt the user 
-              start();
-            }
-          );
-    })
+                
+            ]).then(answers=>{
+                
+                connection.query(
+                    "INSERT INTO employee_role SET ?",
+                    {
+                    title: answers.role,
+                    salary: answers.salary,
+                    department_id: answers.department
+                    
+                    },
+                    function(err) {
+                    if (err) throw err;
+                    console.log("Employee Role added successfully");
+                    // re-prompt the user 
+                    start();
+                    }
+                );
+            })
+
+        })  
     
 };
 
 // Function to add employees to the employee table:
 function addEmployee() {
-    inquirer.prompt([
-        {
-            type: "input",
-            name: "firstname",
-            message: "First Name: "
-        },
-        {
-            type: "input",
-            name: "lastname",
-            message: "Last Name: "
-        },
-        {
-            type: "list",
-            name: "currentRole",
-            message: "Role within the company: ",
-            choices: [
+    // Create Arrays to hold the Employee Roles and then another to hold Employees that can be chosen as manager
+    let employeeRole = [];
+    let employees = [];
 
-            ]
-        },
-        {
-            type: "input",
-            name: "manager",
-            message: "Name of their manager: "
-        }   
-    ]).then(answers=> {
-        
-        connection.query(
-            "INSERT INTO employee SET ?",
-            {
-              first_name: answers.firstname,
-              last_name: answers.lastname,
-              role_id: answers.currentRole,
-              manager_id: answers.manager
-            },
-            function(err) {
-              if (err) throw err;
-              console.log("Employee added successfully");
-              // re-prompt the user 
-              start();
-            }
-          );
-    })
+   // Create connection using promiseMySQL since we will be doing some asynchronous processes
+   promisemysql.createConnection(connectProp)
+   .then((dbconnection) => {
+       return Promise.all([
+
+            // Return all the employee roles from the table employee_role. 
+            // The query will be represented by the variable role
+            dbconnection.query("SELECT * FROM employee_role"),
+            // Return all employee first and last names from the table employee, concatenate the first_name and last_name columns, and insert into a column called fullName
+            // The query will be represented by the variable name
+            dbconnection.query("SELECT * FROM employee, concat(employee.first_name, ' ', employee.last_name) AS fullName from employee")
+
+       ]);
+
+   }).then(([role,name]) => {
+
+        // Push queried employee roles into the array employeeRole
+        for (var i = 0; i < role.length; i++) {
+            employeeRole.push(role[i].title);
+        }
+        // Push queried employee names into the array employees
+        for (var i = 0; i < name.length; i++) {
+            employees.push(name[i].fullName)
+        }
+
+        return Promise.all([role,name]);
+
+   }).then(([role,name]) => {
+
+            inquirer.prompt([
+                {
+                    type: "input",
+                    name: "firstname",
+                    message: "First Name: "
+                },
+                {
+                    type: "input",
+                    name: "lastname",
+                    message: "Last Name: "
+                },
+                {
+                    type: "list",
+                    name: "currentRole",
+                    message: "Role within the company: ",
+                    choices: employeeRole
+
+                    
+                },
+                {
+                    type: "input",
+                    name: "manager",
+                    message: "Name of their manager: ",
+                    choices: employees
+
+                    
+                }   
+            ]).then(answers=> {
+
+                // Set empty variable for role id
+                let roleID;
+                // Set default managerID as null since the managerID is optional
+                let managerID = null;
+
+                // Get the id for the particular employee role selected:
+                for (var i = 0; i < role.length; i++) {
+                    if (answers.currentRole == role[i].title) {
+                        roleID = role[i].id;
+                    }
+                }
+
+                // Get the id for the particular manager selected
+                for (var i = 0; i < name.length; i++) {
+                    if (answers.manager == name[i].fullName) {
+                        managerID = name[i].id;
+                    }
+                }
+
+                
+                connection.query(
+                    "INSERT INTO employee SET ?",
+                    {
+                    first_name: answers.firstname,
+                    last_name: answers.lastname,
+                    role_id: roleID,
+                    manager_id: managerID
+                    },
+                    function(err) {
+                    if (err) throw err;
+                    console.log("Employee added successfully");
+                    // re-prompt the user 
+                    start();
+                    }
+                );
+            });
+
+   })
+
+    
     
 
 };
