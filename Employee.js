@@ -12,7 +12,7 @@
 var mysql = require("mysql"); // For connecting to the MySQL database
 var inquirer = require("inquirer"); // For interacting with the user via the command-line
 var promisemysql = require("promise-mysql") // For doing Asynchronous queries
-require("console.table"); // For printing MySQL rows  to the console
+require("console.table"); // For printing MySQL rows to the console in an attractive fashion.
 
 // Put connection properties within an object so it can be easily used by  both mysql and promise mysql
 var connectProp = {
@@ -94,12 +94,10 @@ function start() {
                 default:
                     console.log("See you later...");
                     process.exit();
-
             };
-
         });
-
 };
+
 
 // Function to add departments to the department table:
 function addDepartment() {
@@ -124,13 +122,14 @@ function addDepartment() {
               start();
             }
           );
-    });
-    
+    }); 
 };
+
 
 // Function to add roles to the employee_role table:
 function addEmployeeRole() {
     // Create Array to hold Department Name. Real time updated list that can then be input into inquirer
+    // The reason we are going to create this array is so that the Department_name question in inquirer can be created dynamically from the database. 
     let departmentName = []
 
     // Create connection using promiseMySQL since we will be doing some asynchronous processes
@@ -153,7 +152,7 @@ function addEmployeeRole() {
 
     return Promise.all([department]);
 
-}).then(([department]) => {
+    }).then(([department]) => {
 
             inquirer.prompt([
                 {
@@ -169,7 +168,6 @@ function addEmployeeRole() {
                             return true;
                         }
                     }
-
                 },
                 {
                     type: "input",
@@ -199,7 +197,6 @@ function addEmployeeRole() {
                     if (answers.department == department[i].department_name) {
                         departmentID = department[i].id;
                     }
-                    
                 } 
                 
                 connection.query(
@@ -217,14 +214,15 @@ function addEmployeeRole() {
                     }
                 );
             })
-
         })  
     
 };
 
+
 // Function to add employees to the employee table:
 function addEmployee() {
-    // Create Arrays to hold the Employee Roles and then another to hold Employees that can be chosen as manager
+    // Create Arrays to hold the Employee Roles and then another to hold Employees that can be chosen as manager.
+    // The reason we are going to create these arrays is so that the Employee roles question and Manager question in inquirer can be created dynamically. 
     let employeeRole = [];
     let employees = [];
 
@@ -341,10 +339,9 @@ function addEmployee() {
                     }
                 );
             });
-
    })   
-
 };
+
 
 // Function to view departments in the department table:
 function viewDepartments() {
@@ -352,9 +349,9 @@ function viewDepartments() {
         if (err) throw err;
         console.table(results);
         start(); 
-    });
-    
+    });   
 };
+
 
 // Function to view roles in the employee_role table:
 function viewEmployeeRoles() {
@@ -365,6 +362,7 @@ function viewEmployeeRoles() {
     });  
 };
 
+
 // Function to view employees in the employees table:
 function viewEmployees() {
     connection.query("SELECT employee.id, employee.first_name, employee.last_name, employee_role.title, employee_role.salary FROM employeetracker_db.employee LEFT JOIN employee_role on employee_role.id = employee.role_id", function(err, results) {
@@ -373,6 +371,7 @@ function viewEmployees() {
         start(); 
     });
 };
+
 
 // // Function to update employee role by changing the role_id in the employee table: 
 function changeJob() {
@@ -394,7 +393,6 @@ function changeJob() {
             dbconnection.query("SELECT employee.id, concat(employee.first_name, ' ' ,  employee.last_name) AS fullName FROM employee ORDER BY fullName ASC")
 
        ]);
-
    })
    .then(([role,name]) => {
 
@@ -429,10 +427,10 @@ function changeJob() {
 
                 // Set empty variable for role id
                 let roleID;
-                // Set default managerID as null since the managerID is optional
+                // Set empty variable for EmployeeID
                 let employeeID;
 
-                // Get the id for the particular employee role selected:
+                // Get the roleId for the particular employee role selected:
                 for (var i = 0; i < role.length; i++) {
                     if (answers.currentRole == role[i].title) {
                         roleID = role[i].id;
@@ -446,7 +444,6 @@ function changeJob() {
                     }
                 }
 
-                
                 connection.query(
                     `UPDATE employee SET role_id = ${roleID} WHERE id = ${employeeID}`,
                     function(err) {
@@ -457,13 +454,5 @@ function changeJob() {
                     }
                 );
             });
-
    })
-
-
-
-
-
-   
-
 };
