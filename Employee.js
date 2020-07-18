@@ -145,7 +145,7 @@ function addEmployeeRole() {
    })
    .then(([department]) => {
 
-    // Push queried employee roles into the array employeeRole
+    // Push queried employee roles into the array departmentName
     for (var i = 0; i < department.length; i++) {
         departmentName.push(department[i].department_name);
     }
