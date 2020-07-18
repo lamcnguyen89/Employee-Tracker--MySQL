@@ -11,7 +11,7 @@
 // Require Dependencies:
 var mysql = require("mysql"); // For connecting to the MySQL database
 var inquirer = require("inquirer"); // For interacting with the user via the command-line
-var promisemysql = require("promise-mysql") // For doing Asynchronous queries
+var promisemysql = require("promise-mysql"); // For doing Asynchronous queries
 require("console.table"); // For printing MySQL rows to the console in an attractive fashion.
 
 // Put connection properties within an object so it can be easily used by  both mysql and promise mysql
@@ -24,7 +24,7 @@ var connectProp = {
                     // Your password
                     password: "root",
                     database: "employeetracker_db"
-}
+};
 
 
 // Establish Connection with MySQL:
