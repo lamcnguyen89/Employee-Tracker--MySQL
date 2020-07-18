@@ -93,6 +93,7 @@ function start() {
                 
                 default:
                     console.log("See you later...");
+                    process.exit();
 
             };
 
